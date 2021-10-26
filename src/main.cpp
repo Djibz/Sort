@@ -10,8 +10,8 @@
 
 using namespace std;
 
-CONST unsigned int WIDTH = 1000;
-CONST unsigned int HEIGHT = 500;
+unsigned int WIDTH = 1000;
+unsigned int HEIGHT = 500;
 int image = 0;
 SDL_Window* pWindow = NULL;
 
@@ -50,7 +50,7 @@ bool saveScreenshotBMP(std::string filepath, SDL_Window* SDLWindow, SDL_Renderer
     return true;
 }
 
-void renderAll(vector<int> * aVect, SDL_Renderer * r)
+void renderAll(vector<int> * aVect, SDL_Renderer * r, int index=-1, int index2=-1)
 {
     SDL_Rect full;
     full.x = 0;
@@ -60,14 +60,18 @@ void renderAll(vector<int> * aVect, SDL_Renderer * r)
     SDL_SetRenderDrawColor(r, 0, 0, 0, 255);
     SDL_RenderFillRect(r, &full);
     SDL_SetRenderDrawColor(r, 255, 0, 0, 255);
-    int width = WIDTH / aVect->size();
+    double width = (double)WIDTH / aVect->size();
     for(int i=0; i<aVect->size(); ++i)
     {
         SDL_Rect aRect;
         aRect.x = i * width;
-        aRect.y = 0;
-        aRect.w = width;
+        aRect.w = width >= 1 ? width : 1;
         aRect.h = (aVect->at(i) * HEIGHT) / aVect->size();
+        aRect.y = HEIGHT - aRect.h;
+        if(index == i || index2 == i)
+            SDL_SetRenderDrawColor(r, 0, 255, 0, 255);
+        else
+            SDL_SetRenderDrawColor(r, 255, 0, 0, 255);
         SDL_RenderFillRect(r, &aRect);
     }
     //SDL_Delay(50);
@@ -81,25 +85,49 @@ void renderAll(vector<int> * aVect, SDL_Renderer * r)
 
 int pivot(vector<int> * aVect, int begin, int end, SDL_Renderer * r)
 {
-    int small = begin-1;
+    int hSmall = begin-1;
     for(int i=begin; i < end; ++i)
     {
         if(aVect->at(i) < aVect->at(end))
         {
-            ++small;
-            if(i != small)
+            ++hSmall;
+            if(i != hSmall)
             {
-                swap(aVect->at(i), aVect->at(small));
-                renderAll(aVect, r);
+                swap(aVect->at(i), aVect->at(hSmall));
+                renderAll(aVect, r, hSmall, i);
             }
         }
     }
-    if(end != small+1)
+    if(end != hSmall+1)
     {
-        swap(aVect->at(end), aVect->at(small+1));
-        renderAll(aVect, r);
+        swap(aVect->at(end), aVect->at(hSmall+1));
+        renderAll(aVect, r, hSmall+1, end);
     }
-    return small+1;
+    return hSmall+1;
+}
+
+void countSort(vector<int> *aVect, int exp, SDL_Renderer *r)
+{
+    for(int index=0; index<aVect->size(); ++index)
+    {
+        bool mooved = false;
+        int i = index;
+        while(i != 0 && aVect->at(i) % (exp*10) < aVect->at(i-1) % (exp*10))
+        {
+            swap(aVect->at(i), aVect->at(i-1));
+            renderAll(aVect, r, i, i-1);
+            mooved = true;
+            --i;
+        }
+        if(mooved)
+            --index;
+    }
+}
+
+void raddix(vector<int> *aVect, SDL_Renderer *r)
+{
+    for (int exp = 1; aVect->size() / exp > 0; exp *= 10) 
+        countSort(aVect, exp, r);
 }
 
 void quickSort(vector<int> * aVect, SDL_Renderer * r, int begin=0, int end=99)
@@ -115,7 +143,7 @@ int main(int argc, char** argv)
 {
     srand(time(0));
     vector<int> * aVect = new vector<int>;
-    for(int i=0; i<1000; ++i)
+    for(int i=0; i<1920; ++i)
         aVect->push_back(i);
     random_shuffle(aVect->begin(), aVect->end());
 
@@ -129,11 +157,15 @@ int main(int argc, char** argv)
     {
         /* Création de la fenêtre */
         
-        pWindow = SDL_CreateWindow("Ma première application SDL2",SDL_WINDOWPOS_UNDEFINED,
+        pWindow = SDL_CreateWindow("AHAHA",SDL_WINDOWPOS_UNDEFINED,
                                                                   SDL_WINDOWPOS_UNDEFINED,
                                                                   WIDTH,
                                                                   HEIGHT,
                                                                   SDL_WINDOW_SHOWN);
+
+        SDL_SetWindowFullscreen(pWindow, SDL_WINDOW_FULLSCREEN_DESKTOP);
+        HEIGHT = 1080;
+        WIDTH = 1920;
 
         SDL_Renderer * renderer =  SDL_CreateRenderer(pWindow, -1, SDL_RENDERER_ACCELERATED);
 
@@ -145,7 +177,8 @@ int main(int argc, char** argv)
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
         //SDL_RenderFillRect(renderer, &aRect);
         
-        quickSort(aVect, renderer, 0, aVect->size()-1);
+        //quickSort(aVect, renderer, 0, aVect->size()-1);
+        raddix(aVect, renderer);
 
         if( pWindow )
         {
