@@ -1,1 +1,0 @@
-gcc -L./lib -I./include src/main.c -lmingw32 -lSDL2main -lSDL2 -o main
