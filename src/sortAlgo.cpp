@@ -1,5 +1,9 @@
 #include "sortAlgo.h"
 #include <string>
+#include <windows.h>
+#include <iostream>
+
+using namespace std;
 
 Swap::Swap(SDL_Renderer *renderer, SDL_Window *window)
 {
