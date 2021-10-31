@@ -2,7 +2,10 @@
 #define SORTALGO_H
 
 #include <vector>
+#include <list>
 #include <SDL2/SDL.h>
+#include <string>
+#include "binaryTree.h"
 
 using namespace std;
 
@@ -14,6 +17,8 @@ class Swap
     SDL_Window *w;
     int last1 = 0;
     int last2 = 0;
+    bool saveScreenshotBMP(std::string filepath);
+    int image = 0;
 public:
     Swap(SDL_Renderer *renderer, SDL_Window *window);
     void operator()(vector<int> *aVect, int i1, int i2);
@@ -54,6 +59,28 @@ public:
     void sort(vector<int> *aVect);
     void triFusion(vector<int> *aVect, int begin, int end);
     void fusion(vector<int> *aVect, int beg1, int end1, int end2);
+};
+
+class Gravity: public SortAlgo
+{
+public:
+    Gravity();
+    void sort(vector<int> *aVect);
+};
+
+class Heap: public SortAlgo
+{
+    Node *root = nullptr;
+    list<Node*> *nodeList;
+public:
+    Heap();
+    ~Heap();
+    void sort(vector<int> *aVect);
+    void createTree(vector<int> *aVect);
+    Node *findEmpty(Node *n, int a);
+    void swapNode(Node *n1, Node *n2, vector<int> *aVect);
+    bool notGood();
+    Node *findNode(int i);
 };
 
 #endif

@@ -71,10 +71,10 @@ void SortGUI::process()
     itsAlgo->sort(itsVector);
 }
 
-bool SortGUI::saveScreenshotBMP(std::string filepath, SDL_Window* SDLWindow, SDL_Renderer* SDLRenderer) {
+bool SortGUI::saveScreenshotBMP(std::string filepath) {
     SDL_Surface* saveSurface = NULL;
     SDL_Surface* infoSurface = NULL;
-    infoSurface = SDL_GetWindowSurface(SDLWindow);
+    infoSurface = SDL_GetWindowSurface(itsWindow);
     if (infoSurface == NULL) {
         std::cerr << "Failed to create info surface from window in saveScreenshotBMP(string), SDL_GetError() - " << SDL_GetError() << "\n";
     } else {
@@ -83,7 +83,7 @@ bool SortGUI::saveScreenshotBMP(std::string filepath, SDL_Window* SDLWindow, SDL
             std::cerr << "Unable to allocate memory for screenshot pixel data buffer!\n";
             return false;
         } else {
-            if (SDL_RenderReadPixels(SDLRenderer, &infoSurface->clip_rect, infoSurface->format->format, pixels, infoSurface->w * infoSurface->format->BytesPerPixel) != 0) {
+            if (SDL_RenderReadPixels(itsRenderer, &infoSurface->clip_rect, infoSurface->format->format, pixels, infoSurface->w * infoSurface->format->BytesPerPixel) != 0) {
                 std::cerr << "Failed to read pixel data from SDL_Renderer object. SDL_GetError() - " << SDL_GetError() << "\n";
                 delete[] pixels;
                 return false;
@@ -104,4 +104,9 @@ bool SortGUI::saveScreenshotBMP(std::string filepath, SDL_Window* SDLWindow, SDL
         infoSurface = NULL;
     }
     return true;
+}
+
+void SortGUI::setTitle(string aTitle)
+{
+    SDL_SetWindowTitle(itsWindow, aTitle.c_str());
 }

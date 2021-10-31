@@ -31,7 +31,8 @@ public:
     void initVect(int size);
     void setAlgo(SortAlgo *algo);
     void process();
-    bool saveScreenshotBMP(std::string filepath, SDL_Window* SDLWindow, SDL_Renderer* SDLRenderer);
+    bool saveScreenshotBMP(std::string filepath);
+    void setTitle(string);
 };
 
 #endif

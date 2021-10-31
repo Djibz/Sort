@@ -2,6 +2,7 @@
 #include <string>
 #include <windows.h>
 #include <iostream>
+#include <cmath>
 
 using namespace std;
 
@@ -9,6 +10,46 @@ Swap::Swap(SDL_Renderer *renderer, SDL_Window *window)
 {
     r = renderer;
     w = window;
+}
+
+bool Swap::saveScreenshotBMP(std::string filepath) {
+    string name = to_string(image);
+    for(int i=name.length(); i<6; ++i)
+        name = "0"+name;
+    filepath += name + ".bmp";
+    SDL_Surface* saveSurface = NULL;
+    SDL_Surface* infoSurface = NULL;
+    infoSurface = SDL_GetWindowSurface(w);
+    if (infoSurface == NULL) {
+        std::cerr << "Failed to create info surface from window in saveScreenshotBMP(string), SDL_GetError() - " << SDL_GetError() << "\n";
+    } else {
+        unsigned char * pixels = new (std::nothrow) unsigned char[infoSurface->w * infoSurface->h * infoSurface->format->BytesPerPixel];
+        if (pixels == 0) {
+            std::cerr << "Unable to allocate memory for screenshot pixel data buffer!\n";
+            return false;
+        } else {
+            if (SDL_RenderReadPixels(r, &infoSurface->clip_rect, infoSurface->format->format, pixels, infoSurface->w * infoSurface->format->BytesPerPixel) != 0) {
+                std::cerr << "Failed to read pixel data from SDL_Renderer object. SDL_GetError() - " << SDL_GetError() << "\n";
+                delete[] pixels;
+                return false;
+            } else {
+                saveSurface = SDL_CreateRGBSurfaceFrom(pixels, infoSurface->w, infoSurface->h, infoSurface->format->BitsPerPixel, infoSurface->w * infoSurface->format->BytesPerPixel, infoSurface->format->Rmask, infoSurface->format->Gmask, infoSurface->format->Bmask, infoSurface->format->Amask);
+                if (saveSurface == NULL) {
+                    std::cerr << "Couldn't create SDL_Surface from renderer pixel data. SDL_GetError() - " << SDL_GetError() << "\n";
+                    delete[] pixels;
+                    return false;
+                }
+                SDL_SaveBMP(saveSurface, filepath.c_str());
+                SDL_FreeSurface(saveSurface);
+                saveSurface = NULL;
+            }
+            delete[] pixels;
+        }
+        SDL_FreeSurface(infoSurface);
+        infoSurface = NULL;
+    }
+    ++image;
+    return true;
 }
 
 void Swap::assign(vector<int> *aVect, int i, int v)
@@ -48,6 +89,7 @@ void Swap::assign(vector<int> *aVect, int i, int v)
     last1 = i;
     //SDL_Delay(delay);
     SDL_RenderPresent(r);
+    //saveScreenshotBMP("E:/1.SORT/");
 }
 
 void Swap::operator()(vector<int> *aVect, int i1, int i2)
@@ -100,6 +142,7 @@ void Swap::operator()(vector<int> *aVect, int i1, int i2)
 
     //SDL_Delay(delay);
     SDL_RenderPresent(r);
+    //saveScreenshotBMP("E:/1.SORT/mini/");
 }
 
 void SortAlgo::setSwap(Swap *s)
@@ -235,4 +278,129 @@ void TriFusion::fusion(vector<int> *aVect, int beg1, int end1, int end2)
         }
     }
     delete[] table1;
+}
+
+Gravity::Gravity()
+{
+
+}
+
+void Gravity::sort(vector<int> *aVect)
+{
+    for(int j=0; j<aVect->size(); ++j)
+        for(int i=aVect->size()-1; i>0; --i)
+        {
+            if(aVect->at(i) < aVect->at(i-1))
+                (*swap)(aVect, i, i-1);
+        }
+}
+
+Heap::Heap()
+{
+
+}
+
+Heap::~Heap()
+{
+    for(Node *n: *nodeList)
+        delete n;
+    delete nodeList;
+}
+
+Node * Heap::findNode(int i)
+{
+    for(Node *n: *nodeList)
+        if(n->index == i)
+            return n;
+    return nullptr;
+}
+
+void Heap::sort(vector<int> *aVect)
+{
+    int count = aVect->size()-1;
+    createTree(aVect);
+    while(root->child1 != nullptr)
+    {
+        while(notGood())
+            for(Node *n: *nodeList)
+            {
+                if(n->parent != nullptr && n->parent->value < n->value)
+                swapNode(n, n->parent, aVect);
+            }
+        Node * aSmall = findNode(count);
+        swapNode(aSmall, root, aVect);
+        aSmall->parent->child1 == aSmall ? aSmall->parent->child1 = nullptr : aSmall->parent->child2 = nullptr;
+        aSmall->parent = nullptr;
+        --count;
+    }
+
+}
+
+void Heap::createTree(vector<int> *aVect)
+{
+    nodeList = new list<Node*>;
+    root = new Node;
+    root->index = 0;
+    root->value = aVect->at(0);
+    nodeList->push_back(root);
+
+    for(int i=1; i<aVect->size(); ++i)
+    {
+        Node *aNode = findEmpty(root, aVect->size());
+        Node *newNode = new Node;
+        newNode->value = aVect->at(i);
+        newNode->index = i;
+        nodeList->push_back(newNode);
+        newNode->parent = aNode;
+
+        if(aNode->child1 == nullptr)
+        {
+            aNode->child1 = newNode;
+        }
+        else
+        {
+            aNode->child2 = newNode;
+        }
+    }
+
+    for(Node *n: *nodeList)
+    {
+        if(n->child1 != nullptr)
+            n->child1->parent = n;
+        if(n->child2 != nullptr)
+            n->child2->parent = n;
+    }
+}
+
+Node* Heap::findEmpty(Node *n, int a)
+{
+    for(int i=0; i<a; ++i)
+    {
+        if(n->child1 == nullptr || n->child2 == nullptr)
+            return n;
+        Node *a = findEmpty(n->child1, i);
+        Node *b = findEmpty(n->child2, i);
+        if(a != nullptr)
+            return a;
+        if(b != nullptr)
+            return b;     
+    }
+    return nullptr;
+}
+
+void Heap::swapNode(Node *n1, Node *n2, vector<int> *aVect)
+{
+    (*swap)(aVect, n1->index, n2->index);
+    int v = n1->value;
+    n1->value = n2->value;
+    n2->value = v;
+}
+
+bool Heap::notGood()
+{
+    bool pSmaller = false;
+    for(Node *n: *nodeList)
+        if(n->parent != nullptr && n->value > n->parent->value)
+            pSmaller = true;
+    return pSmaller;
 }
