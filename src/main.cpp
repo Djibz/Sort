@@ -18,7 +18,7 @@ int main(int argc, char** argv)
     ::ShowWindow(::GetConsoleWindow(), SW_HIDE);
     SortGUI a(1000, 500);
 
-    a.initVect(500);
+    /*a.initVect(500);
     a.setTitle("Heap Sort - 500");
     a.setAlgo(new Heap());
     a.process();
@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     a.setTitle("Gravity Sort - 500");
     a.setAlgo(new Gravity());
     a.process();
-    a.renderAll();
+    a.renderAll();*/
 
     a.initVect(10000);
     a.setTitle("Quick Sort - 10.000");
@@ -36,7 +36,7 @@ int main(int argc, char** argv)
     a.process();
     a.renderAll();
     
-    a.initVect(10000);
+    /*a.initVect(10000);
     a.setTitle("Merge Sort - 10.000");
     a.setAlgo(new TriFusion());
     a.process();
@@ -46,7 +46,7 @@ int main(int argc, char** argv)
     a.setTitle("Radix Sort (LSD)(10) - 500");
     a.setAlgo(new Radix());
     a.process();
-    a.renderAll();
+    a.renderAll();*/
 
     /*SortGUI aGUI(1500, 500);
     aGUI.initVect(500);

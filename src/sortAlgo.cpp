@@ -13,7 +13,13 @@ Swap::Swap(SDL_Renderer *renderer, SDL_Window *window)
 }
 
 bool Swap::saveScreenshotBMP(std::string filepath) {
-    string name = to_string(image);
+    if(image % 150 != 0)
+    {
+        ++image;
+        return false;
+    }
+        
+    string name = to_string(image/100);
     for(int i=name.length(); i<6; ++i)
         name = "0"+name;
     filepath += name + ".bmp";
@@ -141,8 +147,8 @@ void Swap::operator()(vector<int> *aVect, int i1, int i2)
     last2 = i2;
 
     //SDL_Delay(delay);
-    SDL_RenderPresent(r);
-    //saveScreenshotBMP("E:/1.SORT/mini/");
+    //SDL_RenderPresent(r);
+    saveScreenshotBMP("E:/1.SORT/quick/");
 }
 
 void SortAlgo::setSwap(Swap *s)

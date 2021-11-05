@@ -32,7 +32,7 @@ public:
     void setAlgo(SortAlgo *algo);
     void process();
     bool saveScreenshotBMP(std::string filepath);
-    void setTitle(string);
+    void setTitle(string aTitle);
 };
 
 #endif
